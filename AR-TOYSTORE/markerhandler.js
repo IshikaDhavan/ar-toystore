@@ -83,7 +83,7 @@ AFRAME.registerComponent("marker-handler",{
                 swal({
                     icon: "https://i.imgur.com/4NZ6uLY.jpg",
                     title: "Thanks For Order !",
-                    text: "  ",
+                    text: "",
                     timer: 2000,
                     buttons: false
                 })
@@ -93,79 +93,76 @@ AFRAME.registerComponent("marker-handler",{
             })    
         }                   
     },
-    getOrderSummary:async function(uid){
+    handleOrderSummary:async function(){
+        var uid;
+        var orderSummary = await this.getOrderSummary(uid);
+    
+        var modalDiv = document.getElementById("modal-div")
+        modalDiv.style.display = "flex";
+    
+        var tableBodyTag = document.getElementById("bill-table-body");
+        tableBodyTag.innerHTML = ""
+    
+        var currentOrder = Object.keys(orderSummary.current_orders);
+        currentOrder.map(i => {
+          var tr = document.createElement("tr");
+          var item = document.createElement("td");
+          var price = document.createElement("td");
+          var quantity = document.createElement("td");
+          var subTotal = document.createElement("td");
+    
+          item.innerHTML = orderSummary.current_orders[i].item
+          price.innerHTML = "$" + orderSummary.current_orders[i].price
+          price.setAttribute("class", "text-center")
+          quantity.innerHTML = orderSummary.current_orders[i].quantity
+          quantity.setAttribute("class", "text-center")
+          subTotal.innerHTML = "$" + orderSummary.current_orders[i].subtotal
+          subTotal.setAttribute("class", "text-center")
+    
+          tr.appendChild(item);
+          tr.appendChild(price);
+          tr.appendChild(quantity);
+          tr.appendChild(subTotal);
+    
+          tableBodyTag.appendChild(tr);
+    
+        });
+    
+        var totaltr = document.createElement("tr") 
+        var td1 = document.createElement("td")
+        td1.setAttribute("class", "no-line") 
+    
+        var td2 = document.createElement("td")
+        td2.setAttribute("class", "no-line") 
+    
+        var td3 = document.createElement("td")
+        td3.setAttribute("class", "no-line text-center") 
+        
+        var strongTag = document.createElement("strong")
+        strongTag.innerHTML = "Total"
+    
+        td3.appendChild(strongTag);
+    
+        var td4 = document.createElement("td")
+        td4.setAttribute("class", "no-line text-right") 
+        td4.innerHTML = "$" + orderSummary.total_bill
+    
+        totaltr.appendChild(td1);
+        totaltr.appendChild(td2);
+        totaltr.appendChild(td3);
+        totaltr.appendChild(td4);
+    
+        tableBodyTag.appendChild(totaltr);
+    
+      },
+      getOrderSummary:async function(tNumber){
         return await firebase
         .firestore()
-        .collection("users")
-        .doc(uid)
+        .collection("tables")
+        .doc(tNumber)
         .get()
         .then(doc => doc.data())
       },
-    handleOrderSummary: async function(){
-        uid = uid.toUpperCase();
-
-        var modalDiv = getElementById("modal-div")
-        modalDiv.style.display = "flex";
-
-        var orderSummary = await this.getOrderSummary(uid);
-
-        var tableBodyTag = document.getElementById("bill-table-body")
-        tableBodyTag.innerHTML = "";
-
-        var currentOrders = Object.keys(orderSummary.current_orders);
-        currentOrders.map(i => {
-            var tr = document.createElement("tr");
-
-            var item = document.createElement("td");
-            item.innerHTML = orderSummary.current_orders[i].item;
-
-            var price = document.createElement("td");
-            price.innerHTML = "$" + current_orders[i].price;
-            price.setAttribute("class", "text-center")
-
-            var quantity = document.createElement("td");
-            quantity.innerHTML = "$" + current_orders[i].quantity;
-            quantity.setAttribute("class", "text-center")
-
-            var subTotal = document.createElement("td");
-            subTotal.innerHTML = "$" + current_orders[i].subtotal;
-            subTotal.setAttribute("class", "text-center")
-
-            tr.appendChild(item);
-            tr.appendChild(price);
-            tr.appendChild(quantity);
-            tr.appendChild(subTotal);
-            tableBodyTag.appendChild(tr);
-
-        });
-
-        var totalTr = document.createElement("tr");
-
-        var td1 = document.createElement("td");
-        td1.setAttribute("class", "no-line");
-
-        var td2 = document.createElement("td");
-        td2.setAttribute("class", "no-line");
-
-        var td3 = document.createElement("td");
-        td3.setAttribute("class", "no-line text-center");
-
-        var strongTag = document.createElement("strong");
-        strongTag.innerHTML = "Total";
-        td3.appendChild(strongTag)
-
-        var td4 = document.createElement("td");
-        td4.setAttribute("class", "no-line text-right");
-        td4.innerHTML = "$" + orderSummary.total_bill;
-
-        totalTr.appendChild(td1);
-        totalTr.appendChild(td2);
-        totalTr.appendChild(td3);
-        totalTr.appendChild(td4);
-
-        tableBodyTag.appendChild(totalTr);
-
-    },
     handleOrder: function(uid, toy){
         firebase
         .firestore()
